@@ -4,9 +4,13 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     NAME              => 'Etsy::StatsD',
-    VERSION_FROM      => 'lib/Etsy/StatsD.pm', # finds $VERSION
+    #VERSION_FROM      => 'lib/Etsy/StatsD.pm', # finds $VERSION
+	VERSION           => '1.000', #none in module yet; add later
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Etsy/StatsD.pm', # retrieve abstract from module
-       AUTHOR         => 'Steve Sanbeg <stevesanbeg@local>') : ()),
+       AUTHOR         => 'Steve Sanbeg <stevesanbeg@buzzfeed.com>') : ()),
+    ($ExtUtils::MakeMaker::VERSION >= 6.3002 ?
+      (LICENSE      => 'perl') : ()),
+
 );
