@@ -1,16 +1,17 @@
-Etsy-StatsD version 0.01
+Etsy-StatsD version 1
 ========================
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+This is a perl client module to access Etsy's StatsD service, described at
+http://codeascraft.etsy.com/2011/02/15/measure-anything-measure-everything/
 
-A README file is required for CPAN modules since CPAN extracts the
-README file from a module distribution so that people browsing the
-archive can use it get an idea of the modules uses. It is usually a
-good idea to provide version information here so that people can
-decide whether fixes for the module are worth downloading.
+The CPAN copy should be kept in sync with the version distributed with StatsD,
+at https://github.com/etsy/statsd in the exmaples directory,
+so you can it from either location.
+
+The client uses an object-oriented interface, so that some expensive
+operations, i.e. DNS lookups to resolve the host, and other work to prepare
+for the connection, are done by the constructor, to minimize overhead in the
+individual methods.
 
 INSTALLATION
 
@@ -25,11 +26,10 @@ DEPENDENCIES
 
 This module requires these other modules and libraries:
 
-  blah blah blah
+     Carp
+     IO::Socket
 
 COPYRIGHT AND LICENCE
-
-Put the correct copyright and licence information here.
 
 Copyright (C) 2012 by Steve Sanbeg
 
