@@ -4,8 +4,8 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     NAME              => 'Etsy::StatsD',
-    #VERSION_FROM      => 'lib/Etsy/StatsD.pm', # finds $VERSION
-	VERSION           => '1.000001', #none in module yet; add later
+    VERSION_FROM      => 'lib/Etsy/StatsD.pm', # finds $VERSION
+    #VERSION           => '1.000001', #none in module yet; add later
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
     BUILD_REQUIRES    => {Test::MockModule => 0},
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005

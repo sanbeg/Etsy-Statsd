@@ -4,9 +4,11 @@ use warnings;
 use IO::Socket;
 use Carp;
 
+our $VERSION = 1.000001;
+
 =head1 NAME
 
-Etsy::StatsD
+Etsy::StatsD - Object-Oriented Client for Etsy's StatsD Server
 
 =head1 DESCRIPTION
 
@@ -119,6 +121,10 @@ sub send {
 	}
 	return $count;
 }
+
+=head1 SEE ALSO
+
+L<http://codeascraft.etsy.com/2011/02/15/measure-anything-measure-everything/>
 
 =head1 AUTHOR
 
