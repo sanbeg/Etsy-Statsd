@@ -28,8 +28,9 @@ This module requires these other modules and libraries:
 
      Carp
      IO::Socket
+     Test::MockModule
 
-COPYRIGHT AND LICENCE
+COPYRIGHT AND LICENSE
 
 Copyright (C) 2012 by Steve Sanbeg
 

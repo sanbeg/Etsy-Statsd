@@ -6,6 +6,11 @@ use Carp;
 
 our $VERSION = 1.000002;
 
+# The CPAN verion at https://github.com/sanbeg/Etsy-Statsd should be kept in
+# sync with the version distributed with StatsD, at
+# https://github.com/etsy/statsd (in the exmaples directory), so you can get
+# it from either location.
+
 =head1 NAME
 
 Etsy::StatsD - Object-Oriented Client for Etsy's StatsD Server
