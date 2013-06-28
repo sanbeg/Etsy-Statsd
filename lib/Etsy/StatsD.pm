@@ -116,10 +116,15 @@ sub send {
 	my $count  = 0;
 	my $socket = $self->{socket};
 	while ( my ( $stat, $value ) = each %$sampled_data ) {
-		print $socket "$stat:$value\n";
+		_send_to_sock($socket, "$stat:$value\n");
 		++$count;
 	}
 	return $count;
+}
+
+sub _send_to_sock( $$ ) {
+  my ($sock,$msg) = @_;
+  CORE::send( $sock, $msg, 0 );
 }
 
 =head1 SEE ALSO
