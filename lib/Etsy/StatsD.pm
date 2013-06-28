@@ -4,7 +4,7 @@ use warnings;
 use IO::Socket;
 use Carp;
 
-our $VERSION = 1.000002;
+our $VERSION = 1.001000;
 
 # The CPAN verion at https://github.com/sanbeg/Etsy-Statsd should be kept in
 # sync with the version distributed with StatsD, at
@@ -89,6 +89,7 @@ sub new {
     #  in the form of "<host>:<port>:<proto>"
     my %protos = map { $_ => 1 } qw(tcp udp);
     my @connections = ();
+
     if( ref $host eq 'ARRAY' ) {
         foreach my $addr ( @{ $host } ) {
             my ($addr_host,$addr_port,$addr_proto) = split /:/, $addr;
@@ -209,11 +210,16 @@ sub send {
         # calling keys() resets the each() iterator
         keys %$sampled_data;
         while ( my ( $stat,$value ) = each %$sampled_data ) {
-            CORE::send($socket, "$stat:$value\n", 0);
+            _send_to_sock($socket, "$stat:$value\n", 0);
             ++$count;
         }
     }
 	return $count;
+}
+
+sub _send_to_sock( $$ ) {
+    my ($sock,$msg) = @_;
+    CORE::send( $sock, $msg, 0 );
 }
 
 =head1 SEE ALSO

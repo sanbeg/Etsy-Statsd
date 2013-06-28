@@ -1,0 +1,9 @@
+*~
+/blib
+/cover_db
+/Etsy-StatsD-*
+/Makefile
+/Makefile.old
+/pm_to_blib
+/MYMETA.yml
+/MYMETA.json

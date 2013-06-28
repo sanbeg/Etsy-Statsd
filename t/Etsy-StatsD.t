@@ -1,7 +1,6 @@
 use strict;
-use Test::More tests=>24;
+use Test::More tests=>19;
 use Test::MockModule;
-use Test::TCP;
 use Etsy::StatsD;
 
 my $module = Test::MockModule->new('Etsy::StatsD');
@@ -48,17 +47,6 @@ is( $data->{b}, "1|c");
 ok ( my $remote = Etsy::StatsD->new('localhost', 123), 'created with host, port combo');
 is ( $remote->{sockets}[0]->peerport, 123, 'used specified port');
 
-my $mock_server;
-ok( $mock_server = Test::TCP->new(
-        listen => 1,
-        code   => sub {  },
-    ),
-    "mock server setup"
-);
-ok ( my $spray = Etsy::StatsD->new(['localhost','localhost:8126',sprintf('localhost:%d:tcp', $mock_server->port)], 8125), "multiple dispatch with tcp" );
-is ( $spray->{sockets}[0]->peerport, 8125, 'port works in array of hosts');
-is ( $spray->{sockets}[1]->peerport, 8126, 'custom port works in array of hosts');
-is ( $spray->{sockets}[2]->protocol, 6, 'TCP protocol  works in array of hosts');
 
 my $err;
 eval {
