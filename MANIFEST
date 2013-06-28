@@ -2,5 +2,6 @@ Changes
 Makefile.PL
 MANIFEST
 README
+LICENSE
 t/Etsy-StatsD.t
 lib/Etsy/StatsD.pm

@@ -13,5 +13,11 @@ WriteMakefile(
        AUTHOR         => 'Steve Sanbeg <stevesanbeg@buzzfeed.com>') : ()),
     ($ExtUtils::MakeMaker::VERSION >= 6.3002 ?
       (LICENSE      => 'perl') : ()),
+    ($ExtUtils::MakeMaker::VERSION >= 6.4600 ?
+      (META_MERGE => { 
+	resources => { 
+	  repository => 'https://github.com/sanbeg/Etsy-Statsd'
+	 }
+       }) : ()
 
 );
