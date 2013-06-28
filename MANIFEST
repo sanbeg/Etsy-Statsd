@@ -4,4 +4,5 @@ MANIFEST
 README
 LICENSE
 t/Etsy-StatsD.t
+t/send.t
 lib/Etsy/StatsD.pm

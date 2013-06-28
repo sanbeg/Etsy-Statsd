@@ -19,5 +19,5 @@ WriteMakefile(
 	  repository => 'https://github.com/sanbeg/Etsy-Statsd'
 	 }
        }) : ()
-
+   ),
 );
