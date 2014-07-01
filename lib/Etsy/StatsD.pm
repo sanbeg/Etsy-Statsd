@@ -88,6 +88,24 @@ sub update {
 	$self->send( \%data, $sample_rate );
 }
 
+=item gauge(STATS, GAUGE, SAMPLE_RATE)
+
+Send arbitrary values.
+
+=cut
+
+sub gauge {
+	my ( $self, $stats, $gauge, $sample_rate ) = @_;
+	my %data;
+	if ( ref($stats) eq 'ARRAY' ) {
+		%data = map { $_ => "$gauge|g" } @$stats;
+	}
+	else {
+		%data = ( $stats => "$gauge|g" );
+	}
+	$self->send( \%data, $sample_rate );
+}
+
 =item send(DATA, SAMPLE_RATE)
 
 Sending logging data; implicitly called by most of the other methods.
