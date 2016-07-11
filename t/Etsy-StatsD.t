@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests=>17;
+use Test::More tests=>20;
 use Test::MockModule;
 use Etsy::StatsD;
 
@@ -17,7 +17,7 @@ my $update = 5;
 my $time = 1234;
 
 ok (my $statsd = Etsy::StatsD->new );
-is ( $statsd->{socket}->peerport, 8125, 'used default port');
+is ( $statsd->{sockets}[0]->peerport, 8125, 'used default port');
 
 $data = {};
 ok( $statsd->timing($bucket,$time) );
@@ -45,4 +45,8 @@ is( $data->{a}, "1|c");
 is( $data->{b}, "1|c");
 
 ok ( my $remote = Etsy::StatsD->new('localhost', 123));
-is ( $remote->{socket}->peerport, 123, 'used specified port');
+is ( $remote->{sockets}[0]->peerport, 123, 'used specified port');
+
+ok ( my $spray = Etsy::StatsD->new(['localhost','localhost:8126'], 8125) );
+is ( $spray->{sockets}[0]->peerport, 8125, 'port works in array of hosts');
+is ( $spray->{sockets}[1]->peerport, 8126, 'custom port works in array of hosts');
