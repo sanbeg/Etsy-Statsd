@@ -35,6 +35,9 @@ Etsy::StatsD - Object-Oriented Client for Etsy's StatsD Server
     # On two different ports:
     my $repl_statsd = Etsy::StatsD->new(["statsd1","statsd1:8126"]);
 
+    # Use TCP to a collector (you must specify a port)
+    my $important_stats = Etsy::StatsD->new("bizstats1:8125:tcp");
+
 
 =head1 DESCRIPTION
 
@@ -50,11 +53,12 @@ Create a new instance.
 
 =item HOST
 
-Default is localhost.  It may be in the form of '<host>:<port>', in which case,
-the port specified will be used instead of the PORT argument.  The argument may
-also be an array reference of strings in the form of "<host>" or
-"<host>:<port>".  If the port is not specified, the default port specified by
-the PORT argument will be used.
+Default is localhost.  It may be in the form of '<host>:<port>' or
+'<host>:<port>:<proto>', The argument may also be an array reference of strings
+in the form of "<host>", "<host>:<port>", or "<host>:<port>:<proto>".  If the
+port is not specified, the default port specified by the PORT argument will be
+used.  If the protocol is not specified, or is not "tcp" or "udp", "udp" will be
+set.  The only way to change the protocol, is to specify the host, port and protocol.
 
 =item PORT
 
@@ -77,18 +81,23 @@ sub new {
     # Handle multiple connections and
     #  allow different ports to be specified
     #  in the form of "<host>:<port>"
+    my %protos = map { $_ => 1 } qw(tcp udp);
     my @connections = ();
     if( ref $host eq 'ARRAY' ) {
         foreach my $addr ( @{ $host } ) {
-            my ($addr_host,$addr_port) = split /:/, $addr;
-            $addr_port ||= $port;
-            push @connections, [ $addr_host, $addr_port ];
+            my ($addr_host,$addr_port,$addr_proto) = split /:/, $addr;
+            $addr_port  ||= $port;
+            # Default to UDP if we get junk
+            $addr_proto = defined $addr_proto && exists $protos{$addr_proto} ? $addr_proto : 'udp';
+            push @connections, [ $addr_host, $addr_port, $addr_proto ];
         }
     }
     else {
-        my ($addr_host,$addr_port) = split /:/, $host;
-        $addr_port ||= $port;
-        push @connections, [ $addr_host, $addr_port ];
+        my ($addr_host,$addr_port,$addr_proto) = split /:/, $host;
+        $addr_port  ||= $port;
+        # Default to UDP if we get junk
+        $addr_proto = defined $addr_proto && exists $protos{$addr_proto} ? $addr_proto : 'udp';
+        push @connections, [ $addr_host, $addr_port, $addr_proto ];
     }
 
     my @sockets = ();
@@ -96,7 +105,7 @@ sub new {
         my $sock = new IO::Socket::INET(
             PeerAddr => $conn->[0],
             PeerPort => $conn->[1],
-            Proto    => 'udp',
+            Proto    => $conn->[2],
         ) or carp "Failed to initialize socket: $!";
 
         push @sockets, $sock if defined $sock;
