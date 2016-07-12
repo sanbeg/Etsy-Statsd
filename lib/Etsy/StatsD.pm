@@ -81,13 +81,13 @@ sub new {
     if( ref $host eq 'ARRAY' ) {
         foreach my $addr ( @{ $host } ) {
             my ($addr_host,$addr_port) = split /:/, $addr;
-            $addr_port //= $port;
+            $addr_port ||= $port;
             push @connections, [ $addr_host, $addr_port ];
         }
     }
     else {
         my ($addr_host,$addr_port) = split /:/, $host;
-        $addr_port //= $port;
+        $addr_port ||= $port;
         push @connections, [ $addr_host, $addr_port ];
     }
 
@@ -186,9 +186,10 @@ sub send {
 	#failures in any of this can be silently ignored
 	my $count  = 0;
 	foreach my $socket ( @{ $self->{sockets} } ) {
-        # Using foreach/keys because each iterator is unreliable when nested
-        foreach my $stat ( keys %$sampled_data ) {
-            CORE::send($socket, "$stat:$sampled_data->{$stat}\n", 0);
+        # calling keys() resets the each() iterator
+        keys %$sampled_data;
+        while ( my ( $stat,$value ) = each %$sampled_data ) {
+            CORE::send($socket, "$stat:$value\n", 0);
             ++$count;
         }
     }
