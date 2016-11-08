@@ -109,7 +109,7 @@ sub new {
             $addr_proto = lc $addr_proto;  # Normalize to lowercase
             # Check validity
             if( !exists $protos{$addr_proto} ) {
-                carp sprintf("Invalid protocol  '%s', valid: %s", $addr_proto, join(', ', sort keys %protos));
+                croak sprintf("Invalid protocol  '%s', valid: %s", $addr_proto, join(', ', sort keys %protos));
             }
         }
         else {

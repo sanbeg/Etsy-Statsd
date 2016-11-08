@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests=>23;
+use Test::More tests=>24;
 use Test::MockModule;
 use Test::TCP;
 use Etsy::StatsD;
@@ -62,6 +62,12 @@ is ( $spray->{sockets}[2]->protocol, 6, 'TCP protocol  works in array of hosts')
 
 my $err;
 eval {
-    my $t = Etsy::StatsD->new(['localhost', 'localhost:8126:igmp']);
+    my $t = Etsy::StatsD->new('localhost:8126:igmp');
 } or do { $err = $@; };
 ok( defined $err && $err =~ /Invalid protocol/, "invalid protocol dies" ) or diag($err);
+
+eval {
+    my $t = Etsy::StatsD->new(['localhost', 'localhost:8126:igmp']);
+} or do { $err = $@; };
+ok( defined $err && $err =~ /Invalid protocol/, "invalid protocol dies in array ref" ) or diag($err);
+
