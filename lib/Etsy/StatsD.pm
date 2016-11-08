@@ -87,16 +87,34 @@ sub new {
         foreach my $addr ( @{ $host } ) {
             my ($addr_host,$addr_port,$addr_proto) = split /:/, $addr;
             $addr_port  ||= $port;
-            # Default to UDP if we get junk
-            $addr_proto = defined $addr_proto && exists $protos{$addr_proto} ? $addr_proto : 'udp';
+            # Validate the protocol
+            if( defined $addr_proto ) {
+                $addr_proto = lc $addr_proto;  # Normalize to lowercase
+                # Check validity
+                if( !exists $protos{$addr_proto} ) {
+                    croak sprintf("Invalid protocol  '%s', valid: %s", $addr_proto, join(', ', sort keys %protos));
+                }
+            }
+            else {
+                $addr_proto = 'udp';
+            }
             push @connections, [ $addr_host, $addr_port, $addr_proto ];
         }
     }
     else {
         my ($addr_host,$addr_port,$addr_proto) = split /:/, $host;
         $addr_port  ||= $port;
-        # Default to UDP if we get junk
-        $addr_proto = defined $addr_proto && exists $protos{$addr_proto} ? $addr_proto : 'udp';
+        # Validate the protocol
+        if( defined $addr_proto ) {
+            $addr_proto = lc $addr_proto;  # Normalize to lowercase
+            # Check validity
+            if( !exists $protos{$addr_proto} ) {
+                carp sprintf("Invalid protocol  '%s', valid: %s", $addr_proto, join(', ', sort keys %protos));
+            }
+        }
+        else {
+            $addr_proto = 'udp';
+        }
         push @connections, [ $addr_host, $addr_port, $addr_proto ];
     }
 
