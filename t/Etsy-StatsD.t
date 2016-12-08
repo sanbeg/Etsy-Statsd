@@ -62,7 +62,7 @@ is ( $spray->{sockets}[2]->protocol, 6, 'TCP protocol  works in array of hosts')
 
 my $err;
 eval {
-    my $t = Etsy::StatsD->new('localhost:8126:igmp');
+    my $t = Etsy::StatsD->new(['localhost:8126:igmp']);
 } or do { $err = $@; };
 ok( defined $err && $err =~ /Invalid protocol/, "invalid protocol dies" ) or diag($err);
 
