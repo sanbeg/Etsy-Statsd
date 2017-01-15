@@ -230,6 +230,10 @@ L<http://codeascraft.etsy.com/2011/02/15/measure-anything-measure-everything/>
 
 Steve Sanbeg L<http://www.buzzfeed.com/stv>
 
+=head1 LICENSE
+
+Same as perl.
+
 =cut
 
 1;
