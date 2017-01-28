@@ -4,7 +4,7 @@ use warnings;
 use IO::Socket;
 use Carp;
 
-our $VERSION = 1.002001;
+our $VERSION = 1.002002;
 
 # The CPAN verion at https://github.com/sanbeg/Etsy-Statsd should be kept in
 # sync with the version distributed with StatsD, at

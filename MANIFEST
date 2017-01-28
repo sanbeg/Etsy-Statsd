@@ -5,5 +5,4 @@ README
 LICENSE
 t/Etsy-StatsD.t
 t/send.t
-t/server.t
 lib/Etsy/StatsD.pm
