@@ -80,9 +80,9 @@ sampling. e.g. 0.5 for 50%.
 =cut
 
 sub new {
-	my ( $class, $host, $port, $sample_rate ) = @_;
-	$host = 'localhost' unless defined $host;
-	$port = 8125        unless defined $port;
+    my ( $class, $host, $port, $sample_rate ) = @_;
+    $host = 'localhost' unless defined $host;
+    $port = 8125        unless defined $port;
 
     # Handle multiple connections and
     #  allow different ports to be specified
@@ -125,7 +125,7 @@ sub new {
     # Check that we have at least 1 socket to send to
     croak "Failed to initialize any sockets." unless @sockets;
 
-	bless { sockets => \@sockets, sample_rate => $sample_rate }, $class;
+    bless { sockets => \@sockets, sample_rate => $sample_rate }, $class;
 }
 
 =item timing(STAT, TIME, SAMPLE_RATE)
@@ -135,8 +135,8 @@ Log timing information
 =cut
 
 sub timing {
-	my ( $self, $stat, $time, $sample_rate ) = @_;
-	$self->send( { $stat => "$time|ms" }, $sample_rate );
+    my ( $self, $stat, $time, $sample_rate ) = @_;
+    $self->send( { $stat => "$time|ms" }, $sample_rate );
 }
 
 =item increment(STATS, SAMPLE_RATE)
@@ -146,8 +146,8 @@ Increment one of more stats counters.
 =cut
 
 sub increment {
-	my ( $self, $stats, $sample_rate ) = @_;
-	$self->update( $stats, 1, $sample_rate );
+    my ( $self, $stats, $sample_rate ) = @_;
+    $self->update( $stats, 1, $sample_rate );
 }
 
 =item decrement(STATS, SAMPLE_RATE)
@@ -157,8 +157,8 @@ Decrement one of more stats counters.
 =cut
 
 sub decrement {
-	my ( $self, $stats, $sample_rate ) = @_;
-	$self->update( $stats, -1, $sample_rate );
+    my ( $self, $stats, $sample_rate ) = @_;
+    $self->update( $stats, -1, $sample_rate );
 }
 
 =item update(STATS, DELTA, SAMPLE_RATE)
@@ -168,16 +168,16 @@ Update one of more stats counters by arbitrary amounts.
 =cut
 
 sub update {
-	my ( $self, $stats, $delta, $sample_rate ) = @_;
-	$delta = 1 unless defined $delta;
-	my %data;
-	if ( ref($stats) eq 'ARRAY' ) {
-		%data = map { $_ => "$delta|c" } @$stats;
-	}
-	else {
-		%data = ( $stats => "$delta|c" );
-	}
-	$self->send( \%data, $sample_rate );
+    my ( $self, $stats, $delta, $sample_rate ) = @_;
+    $delta = 1 unless defined $delta;
+    my %data;
+    if ( ref($stats) eq 'ARRAY' ) {
+        %data = map { $_ => "$delta|c" } @$stats;
+    }
+    else {
+        %data = ( $stats => "$delta|c" );
+    }
+    $self->send( \%data, $sample_rate );
 }
 
 =item send(DATA, SAMPLE_RATE)
@@ -189,24 +189,24 @@ Sending logging data; implicitly called by most of the other methods.
 =cut
 
 sub send {
-	my ( $self, $data, $sample_rate ) = @_;
-	$sample_rate = $self->{sample_rate} unless defined $sample_rate;
+    my ( $self, $data, $sample_rate ) = @_;
+    $sample_rate = $self->{sample_rate} unless defined $sample_rate;
 
-	my $sampled_data;
-	if ( defined($sample_rate) and $sample_rate < 1 ) {
-		while ( my ( $stat, $value ) = each %$data ) {
-			$sampled_data->{$stat} = "$value|\@$sample_rate" if rand() <= $sample_rate;
-		}
-	}
-	else {
-		$sampled_data = $data;
-	}
+    my $sampled_data;
+    if ( defined($sample_rate) and $sample_rate < 1 ) {
+        while ( my ( $stat, $value ) = each %$data ) {
+            $sampled_data->{$stat} = "$value|\@$sample_rate" if rand() <= $sample_rate;
+        }
+    }
+    else {
+        $sampled_data = $data;
+    }
 
-	return '0 but true' unless keys %$sampled_data;
+    return '0 but true' unless keys %$sampled_data;
 
-	#failures in any of this can be silently ignored
-	my $count  = 0;
-	foreach my $socket ( @{ $self->{sockets} } ) {
+    #failures in any of this can be silently ignored
+    my $count  = 0;
+    foreach my $socket ( @{ $self->{sockets} } ) {
         # calling keys() resets the each() iterator
         keys %$sampled_data;
         while ( my ( $stat,$value ) = each %$sampled_data ) {
@@ -214,7 +214,7 @@ sub send {
             ++$count;
         }
     }
-	return $count;
+    return $count;
 }
 
 sub _send_to_sock( $$ ) {

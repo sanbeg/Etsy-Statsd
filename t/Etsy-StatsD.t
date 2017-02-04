@@ -7,9 +7,9 @@ my $module = Test::MockModule->new('Etsy::StatsD');
 my $data;
 
 $module->mock(
-	send => sub {
-		$data = $_[1];
-	}
+    send => sub {
+        $data = $_[1];
+    }
 );
 
 my $bucket = 'test';
