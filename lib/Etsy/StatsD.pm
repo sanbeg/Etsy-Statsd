@@ -80,7 +80,19 @@ sampling. e.g. 0.5 for 50%.
 =cut
 
 sub new {
-    my ( $class, $host, $port, $sample_rate ) = @_;
+    my ( $class, $host, $port, $sample_rate, $prefix, $suffix ) = @_;
+
+    if ( ref($host) eq 'HASH' ) {
+        my $args = $host;
+
+        $host = $args->{host};
+        $port = $args->{port};
+
+        $sample_rate = $args->{sample_rate};
+        $prefix      = $args->{prefix};
+        $suffix      = $args->{suffix};
+    }
+
     $host = 'localhost' unless defined $host;
     $port = 8125        unless defined $port;
 
@@ -125,7 +137,34 @@ sub new {
     # Check that we have at least 1 socket to send to
     croak "Failed to initialize any sockets." unless @sockets;
 
-    bless { sockets => \@sockets, sample_rate => $sample_rate }, $class;
+    bless {
+        sockets     => \@sockets,
+        sample_rate => $sample_rate,
+        prefix      => $prefix // '',
+        suffix      => $suffix // '',
+    }, $class;
+}
+
+=item prefix(STRING)
+
+A prefix to be prepended to all metric names
+
+=cut
+
+sub prefix {
+    my ( $self ) = @_;
+    @_ > 1 ? $self->{prefix} = $_[1] : $self->{prefix};
+}
+
+=item suffix(STRING)
+
+A suffix to be appended to all metric names
+
+=cut
+
+sub suffix {
+    my ( $self ) = @_;
+    @_ > 1 ? $self->{suffix} = $_[1] : $self->{suffix};
 }
 
 =item timing(STAT, TIME, SAMPLE_RATE)
@@ -209,8 +248,8 @@ sub send {
     foreach my $socket ( @{ $self->{sockets} } ) {
         # calling keys() resets the each() iterator
         keys %$sampled_data;
-        while ( my ( $stat,$value ) = each %$sampled_data ) {
-            _send_to_sock($socket, "$stat:$value\n", 0);
+        while ( my ( $stat, $value ) = each %$sampled_data ) {
+            _send_to_sock($socket, $self->_metric_name($stat).":$value\n", 0);
             ++$count;
         }
     }
@@ -218,8 +257,13 @@ sub send {
 }
 
 sub _send_to_sock( $$ ) {
-    my ($sock,$msg) = @_;
+    my ( $sock, $msg ) = @_;
     CORE::send( $sock, $msg, 0 );
+}
+
+sub _metric_name {
+    my ($self, $name) = @_;
+    join('', $self->{prefix}, $name, $self->{suffix});
 }
 
 =head1 SEE ALSO
