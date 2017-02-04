@@ -219,6 +219,28 @@ sub update {
     $self->send( \%data, $sample_rate );
 }
 
+=item gauge(STATS, VALUE, SAMPLE_RATE)
+
+Send a value for the named gauge metric.
+
+=cut
+
+sub gauge {
+    my ( $self, $stats, $value, $sample_rate ) = @_;
+    $self->send( { $stats => "$value|g" }, $sample_rate );
+}
+
+=item set(STATS, VALUE, SAMPLE_RATE)
+
+Add a value to the unique set metric.
+
+=cut
+
+sub set {
+    my ( $self, $stats, $value, $sample_rate ) = @_;
+    $self->send( { $stats => "$value|s" }, $sample_rate );
+}
+
 =item send(DATA, SAMPLE_RATE)
 
 Sending logging data; implicitly called by most of the other methods.

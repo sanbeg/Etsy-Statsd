@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests => 23;
+use Test::More tests => 27;
 use Test::MockModule;
 use Etsy::StatsD;
 
@@ -44,6 +44,14 @@ $data = [];
 ok( $statsd->update(['a','b']) );
 is( (sort @$data)[0], "a:1|c" );
 is( (sort @$data)[1], "b:1|c" );
+
+$data = [];
+ok( $statsd->gauge($bucket, $update) );
+is( $data->[0], "$bucket:$update|g" );
+
+$data = [];
+ok( $statsd->set($bucket, 'value') );
+is( $data->[0], "$bucket:value|s" );
 
 $data = [];
 ok( $statsd->prefix('prefix.') );
