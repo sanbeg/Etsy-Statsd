@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests=>19;
+use Test::More tests=>23;
 use Test::MockModule;
 use Etsy::StatsD;
 
@@ -43,6 +43,14 @@ $data = {};
 ok( $statsd->update(['a','b']) );
 is( $data->{a}, "1|c");
 is( $data->{b}, "1|c");
+
+$data = {};
+ok( $statsd->gauge($bucket, $update) );
+is( $data->{$bucket}, "$update|g");
+
+$data = [];
+ok( $statsd->set($bucket, 'value') );
+is( $data->{$bucket}, "value|s");
 
 ok ( my $remote = Etsy::StatsD->new('localhost', 123), 'created with host, port combo');
 is ( $remote->{sockets}[0]->peerport, 123, 'used specified port');
