@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests => 27;
+use Test::More tests => 30;
 use Test::MockModule;
 use Etsy::StatsD;
 
@@ -58,6 +58,21 @@ ok( $statsd->prefix('prefix.') );
 ok( $statsd->suffix('.suffix') );
 ok( $statsd->increment($bucket) );
 is( $data->[0], "prefix.$bucket.suffix:1|c" );
+
+$data = [];
+ok( my $timer = $statsd->timer($bucket) );
+sleep(1);
+$timer->finish;
+like( $data->[0], qr/^prefix\.$bucket\.suffix:([\.\d]+)\|ms$/ );
+
+{
+    my $message;
+    local $SIG{__WARN__} = sub { $message = $_[0] };
+    my $timer = $statsd->timer($bucket);
+    undef $timer;
+    like( $message, qr/Destroy unfinished timer for metric/ );
+}
+
 
 ok ( my $remote = Etsy::StatsD->new('localhost', 123), 'created with host, port combo');
 is ( $remote->{sockets}[0]->peerport, 123, 'used specified port');

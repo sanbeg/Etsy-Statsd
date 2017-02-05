@@ -241,6 +241,21 @@ sub set {
     $self->send( { $stats => "$value|s" }, $sample_rate );
 }
 
+=item timer(STATS, SAMPLE_RATE)
+
+Start timer for metric STATS. Return Etsy::StatsD::Timer object with C<finish()> and C<cancel()> methods.
+
+    my $timer = $statsd->timer('foo');
+    ...
+    $timer->finish;
+
+=cut
+
+sub timer {
+    my ( $self, $stats, $sample_rate ) = @_;
+    return Etsy::StatsD::Timer->new( $self, $stats, $sample_rate );
+}
+
 =item send(DATA, SAMPLE_RATE)
 
 Sending logging data; implicitly called by most of the other methods.
@@ -301,5 +316,50 @@ Steve Sanbeg L<http://www.buzzfeed.com/stv>
 Same as perl.
 
 =cut
+
+
+package Etsy::StatsD::Timer;
+
+use Time::HiRes;
+
+sub new {
+    my ( $class, $statsd, $metric, $sample_rate ) = @_;
+
+    my ( undef, $file, $line ) = caller(1);
+
+    return bless {
+        statsd      => $statsd,
+        metric      => $metric,
+        sample_rate => $sample_rate,
+        start       => Time::HiRes::time,
+        file        => $file,
+        line        => $line,
+        is_finished => 0,
+    }, $class;
+}
+
+sub finish {
+    my ($self) = @_;
+
+    $self->{statsd}->timing( $self->{metric}, ( Time::HiRes::time - $self->{start} ) * 1000, $self->{sample_rate} );
+
+    $self->{is_finished} = 1;
+}
+
+sub cancel {
+    my ($self) = @_;
+    $self->{is_finished} = 1;
+}
+
+sub DESTROY {
+    my ($self) = @_;
+    warn sprintf(
+        "Destroy unfinished timer for metric %s started at %s line %s.\n",
+        $self->{statsd} ? $self->{statsd}->_metric_name( $self->{metric} ) : $self->{metric},
+        $self->{file},
+        $self->{line}
+    ) unless $_[0]->{is_finished};
+}
+
 
 1;
