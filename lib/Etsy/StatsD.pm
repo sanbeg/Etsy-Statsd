@@ -11,43 +11,6 @@ our $VERSION = 1.002002;
 # https://github.com/etsy/statsd (in the exmaples directory), so you can get
 # it from either location.
 
-=head1 NAME
-
-Etsy::StatsD - Object-Oriented Client for Etsy's StatsD Server
-
-=head1 SYNOPSIS
-
-    use Etsy::StatsD;
-
-    # Increment a counter
-    my $statsd = Etsy::StatsD->new();
-    $statsd->increment( 'app.method.success' );
-
-
-    # Time something
-    use Time::HiRes;
-
-    my $start_time = time;
-    $app->do_stuff;
-    my $done_time = time;
-
-    # Timers are expected in milliseconds
-    $statsd->timing( 'app.method', ($done_time - $start_time) * 1000 );
-
-    # Send to two StatsD Endpoints simultaneously
-    my $repl_statsd = Etsy::StatsD->new(["statsd1","statsd2"]);
-
-    # On two different ports:
-    my $repl_statsd = Etsy::StatsD->new(["statsd1","statsd1:8126"]);
-
-    # Use TCP to a collector (you must specify a port)
-    my $important_stats = Etsy::StatsD->new(["bizstats1:8125:tcp"]);
-
-
-=head1 DESCRIPTION
-
-=cut
-
 sub import {
     my $class = shift;
 
@@ -83,37 +46,6 @@ sub import {
         *$full_varname = \$deferred;
     }
 }
-
-=over
-
-=item new (HOST, PORT, SAMPLE_RATE)
-
-Create a new instance.
-
-=over
-
-=item HOST
-
-
-If the argument is a string, it must be a hostname or IP only.  The default is
-'localhost'.  The argument may also be an array reference of strings in the
-form of "<host>", "<host>:<port>", or "<host>:<port>:<proto>".  If the port is
-not specified, the default port specified by the PORT argument will be used.
-If the protocol is not specified, or is not "tcp" or "udp", "udp" will be set.
-The only way to change the protocol, is to specify the host, port and protocol.
-
-=item PORT
-
-Default is 8125.  Will be used as the default port for any HOST argument not explicitly defining port.
-
-=item SAMPLE_RATE
-
-Default is undefined, or no sampling performed.  Specify a rate as a decimal between 0 and 1 to enable
-sampling. e.g. 0.5 for 50%.
-
-=back
-
-=cut
 
 sub new {
     my ( $class, $host, $port, $sample_rate, $prefix, $suffix ) = @_;
@@ -181,66 +113,30 @@ sub new {
     }, $class;
 }
 
-=item prefix(STRING)
-
-A prefix to be prepended to all metric names
-
-=cut
-
 sub prefix {
     my ( $self ) = @_;
     @_ > 1 ? $self->{prefix} = $_[1] : $self->{prefix};
 }
-
-=item suffix(STRING)
-
-A suffix to be appended to all metric names
-
-=cut
 
 sub suffix {
     my ( $self ) = @_;
     @_ > 1 ? $self->{suffix} = $_[1] : $self->{suffix};
 }
 
-=item timing(STAT, TIME, SAMPLE_RATE)
-
-Log timing information
-
-=cut
-
 sub timing {
     my ( $self, $stat, $time, $sample_rate ) = @_;
     $self->send( { $stat => "$time|ms" }, $sample_rate );
 }
-
-=item increment(STATS, SAMPLE_RATE)
-
-Increment one of more stats counters.
-
-=cut
 
 sub increment {
     my ( $self, $stats, $sample_rate ) = @_;
     $self->update( $stats, 1, $sample_rate );
 }
 
-=item decrement(STATS, SAMPLE_RATE)
-
-Decrement one of more stats counters.
-
-=cut
-
 sub decrement {
     my ( $self, $stats, $sample_rate ) = @_;
     $self->update( $stats, -1, $sample_rate );
 }
-
-=item update(STATS, DELTA, SAMPLE_RATE)
-
-Update one of more stats counters by arbitrary amounts.
-
-=cut
 
 sub update {
     my ( $self, $stats, $delta, $sample_rate ) = @_;
@@ -255,50 +151,20 @@ sub update {
     $self->send( \%data, $sample_rate );
 }
 
-=item gauge(STATS, VALUE, SAMPLE_RATE)
-
-Send a value for the named gauge metric.
-
-=cut
-
 sub gauge {
     my ( $self, $stats, $value, $sample_rate ) = @_;
     $self->send( { $stats => "$value|g" }, $sample_rate );
 }
-
-=item set(STATS, VALUE, SAMPLE_RATE)
-
-Add a value to the unique set metric.
-
-=cut
 
 sub set {
     my ( $self, $stats, $value, $sample_rate ) = @_;
     $self->send( { $stats => "$value|s" }, $sample_rate );
 }
 
-=item timer(STATS, SAMPLE_RATE)
-
-Start timer for metric STATS. Return Etsy::StatsD::Timer object with C<finish()> and C<cancel()> methods.
-
-    my $timer = $statsd->timer('foo');
-    ...
-    $timer->finish;
-
-=cut
-
 sub timer {
     my ( $self, $stats, $sample_rate ) = @_;
     return Etsy::StatsD::Timer->new( $self, $stats, $sample_rate );
 }
-
-=item send(DATA, SAMPLE_RATE)
-
-Sending logging data; implicitly called by most of the other methods.
-
-=back
-
-=cut
 
 sub send {
     my ( $self, $data, $sample_rate ) = @_;
@@ -328,31 +194,6 @@ sub send {
     }
     return $count;
 }
-
-=head1 IMPORT SYNTACTIC SUGAR (EXPERIMENTAL)
-
-You can use L<Etsy::Statsd> in well known L<Log::Any> manner
-
-In a CPAN or other module:
-
-    package Foo;
-    use Etsy::Statsd qw($statsd);
-
-    # send a metric
-    $statsd->incemenet('foo.metrict');
-
-In your application:
-
-    use Foo;
-    use Etsy::StatsD '$statsd', host => '1.2.3.4';
-
-    $statsd->increment('main.metric');
-
-    # reconfigure Statsd options
-    # will affect all created $statsd objects
-    Etsy::StatsD->configure(host => '4.3.2.1');
-
-=cut
 
 {
     my $config    = {};
@@ -394,20 +235,6 @@ sub _metric_name {
     my ($self, $name) = @_;
     join('', $self->{prefix}, $name, $self->{suffix});
 }
-
-=head1 SEE ALSO
-
-L<http://codeascraft.etsy.com/2011/02/15/measure-anything-measure-everything/>
-
-=head1 AUTHOR
-
-Steve Sanbeg L<http://www.buzzfeed.com/stv>
-
-=head1 LICENSE
-
-Same as perl.
-
-=cut
 
 
 package Etsy::StatsD::Timer;
@@ -473,5 +300,164 @@ sub AUTOLOAD {
 
 sub DESTROY { }
 
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Etsy::StatsD - Object-Oriented Client for Etsy's StatsD Server
+
+=head1 SYNOPSIS
+
+    use Etsy::StatsD;
+
+    # Increment a counter
+    my $statsd = Etsy::StatsD->new();
+    $statsd->increment( 'app.method.success' );
+
+
+    # Time something
+    use Time::HiRes;
+
+    my $start_time = time;
+    $app->do_stuff;
+    my $done_time = time;
+
+    # Timers are expected in milliseconds
+    $statsd->timing( 'app.method', ($done_time - $start_time) * 1000 );
+
+    # Send to two StatsD Endpoints simultaneously
+    my $repl_statsd = Etsy::StatsD->new(["statsd1","statsd2"]);
+
+    # On two different ports:
+    my $repl_statsd = Etsy::StatsD->new(["statsd1","statsd1:8126"]);
+
+    # Use TCP to a collector (you must specify a port)
+    my $important_stats = Etsy::StatsD->new(["bizstats1:8125:tcp"]);
+
+
+=head1 METHODS
+
+=over
+
+=head2 new(HOST, PORT, SAMPLE_RATE, PREFIX, SUFFIX)
+
+Create a new instance.
+
+=over
+
+=item HOST
+
+
+If the argument is a string, it must be a hostname or IP only. The default is
+'localhost'. The argument may also be an array reference of strings in the
+form of "<host>", "<host>:<port>", or "<host>:<port>:<proto>". If the port is
+not specified, the default port specified by the PORT argument will be used.
+If the protocol is not specified, or is not "tcp" or "udp", "udp" will be set.
+The only way to change the protocol, is to specify the host, port and protocol.
+
+=item PORT
+
+Default is 8125. Will be used as the default port for any HOST argument not explicitly defining port.
+
+=item SAMPLE_RATE
+
+Default is undefined, or no sampling performed. Specify a rate as a decimal between 0 and 1 to enable
+sampling. e.g. 0.5 for 50%.
+
+=item PREFIX
+
+Optional. Default is ''. Specify prefix for metric names.
+
+=item SUFFIX
+
+Optional. Default is ''. Specify suffix for metric names.
+
+=back
+
+=head2 prefix(STRING)
+
+A prefix to be prepended to all metric names.
+
+=head2 suffix(STRING)
+
+A suffix to be appended to all metric names.
+
+=head2 timing(STAT, TIME, SAMPLE_RATE)
+
+Log timing information
+
+=head2 increment(STATS, SAMPLE_RATE)
+
+Increment one of more stats counters.
+
+=head2 decrement(STATS, SAMPLE_RATE)
+
+Decrement one of more stats counters.
+
+=head2 update(STATS, DELTA, SAMPLE_RATE)
+
+Update one of more stats counters by arbitrary amounts.
+
+=head2 gauge(STATS, VALUE, SAMPLE_RATE)
+
+Send a value for the named gauge metric.
+
+=head2 set(STATS, VALUE, SAMPLE_RATE)
+
+Add a value to the unique set metric.
+
+=head2 timer(STATS, SAMPLE_RATE)
+
+Start timer for metric STATS. Return Etsy::StatsD::Timer object with C<finish()> and C<cancel()> methods.
+
+    my $timer = $statsd->timer('foo');
+    ...
+    $timer->finish;
+
+=head2 send(DATA, SAMPLE_RATE)
+
+Sending logging data; implicitly called by most of the other methods.
+
+=head1 IMPORT SYNTACTIC SUGAR (EXPERIMENTAL)
+
+You can use L<Etsy::Statsd> in well known L<Log::Any> manner
+
+In a CPAN or other module:
+
+    package Foo;
+    use Etsy::Statsd qw($statsd);
+
+    # send a metric
+    $statsd->incemenet('foo.metrict');
+
+In your application:
+
+    use Foo;
+    use Etsy::StatsD '$statsd', host => '1.2.3.4';
+
+    $statsd->increment('main.metric');
+
+    # reconfigure Statsd options
+    # will affect all created $statsd objects
+    Etsy::StatsD->configure(host => '4.3.2.1');
+
+=head1 SEE ALSO
+
+L<http://codeascraft.etsy.com/2011/02/15/measure-anything-measure-everything/>
+
+=head1 AUTHOR
+
+Steve Sanbeg L<http://www.buzzfeed.com/stv>
+
+=head1 LICENSE
+
+Same as perl.
+
+=cut
 
 1;
