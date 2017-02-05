@@ -48,6 +48,42 @@ Etsy::StatsD - Object-Oriented Client for Etsy's StatsD Server
 
 =cut
 
+sub import {
+    my $class = shift;
+
+    return unless @_;
+
+    my $varname;
+    my $config = {};
+
+    while ( $_ = shift @_) {
+        if (/^\$(statsd?)/) {
+            $varname = $1;
+        }
+        else {
+            $config->{$_} = shift @_; # pairwise
+        }
+    }
+
+    if (%$config) {
+        $class->configure($config);
+    }
+
+    if ($varname) {
+        my $caller  = caller();
+
+        no strict 'refs';
+        my $full_varname = "${caller}::$varname";
+
+        # my $statsd  = $class->get_statsd;
+        # *$full_varname = \$statsd;
+
+        # Defer object creation because we need config that will be availabe at run time
+        my $deferred = Etsy::StatsD::_Deferred->new;
+        *$full_varname = \$deferred;
+    }
+}
+
 =over
 
 =item new (HOST, PORT, SAMPLE_RATE)
@@ -293,6 +329,62 @@ sub send {
     return $count;
 }
 
+=head1 IMPORT SYNTACTIC SUGAR (EXPERIMENTAL)
+
+You can use L<Etsy::Statsd> in well known L<Log::Any> manner
+
+In a CPAN or other module:
+
+    package Foo;
+    use Etsy::Statsd qw($statsd);
+
+    # send a metric
+    $statsd->incemenet('foo.metrict');
+
+In your application:
+
+    use Foo;
+    use Etsy::StatsD '$statsd', host => '1.2.3.4';
+
+    $statsd->increment('main.metric');
+
+    # reconfigure Statsd options
+    # will affect all created $statsd objects
+    Etsy::StatsD->configure(host => '4.3.2.1');
+
+=cut
+
+{
+    my $config    = {};
+    my $instances = [];
+
+    sub configure {
+        my ( $class, @args ) = @_;
+        $config = ref($args[0]) eq 'HASH' ? $args[0] : { @args };
+
+        # clean out destroyed objects
+        # maybee it will be better to do in DESTROY
+        @$instances = grep { defined } @$instances;
+
+        for (@$instances) {
+            $_->_update_options($config);
+        }
+    }
+
+    sub get_statsd {
+        my ($class) = @_;
+        my $statsd = $class->new($config);
+        push( @$instances, $statsd );
+        return $statsd;
+    }
+
+    sub _update_options {
+        my ( $self, $options ) = @_;
+        my $new_statsd = ref($_[0])->new($_[1]);
+        %{ $self } = %{ $new_statsd };
+    }
+}
+
 sub _send_to_sock( $$ ) {
     my ( $sock, $msg ) = @_;
     CORE::send( $sock, $msg, 0 );
@@ -359,6 +451,24 @@ sub DESTROY {
         $self->{file},
         $self->{line}
     ) unless $_[0]->{is_finished};
+}
+
+
+package Etsy::StatsD::_Deferred;
+
+sub new {
+    my ($class) = @_;
+    return bless {}, $class;
+}
+
+sub AUTOLOAD {
+    my ($self, @args) = @_;
+
+    my ($sub) = our $AUTOLOAD =~ /.*::(.+)$/;
+
+    $_[0] = Etsy::StatsD->get_statsd;
+
+    return $_[0]->$sub(@args);
 }
 
 
