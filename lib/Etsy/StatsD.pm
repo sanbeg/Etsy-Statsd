@@ -471,5 +471,7 @@ sub AUTOLOAD {
     return $_[0]->$sub(@args);
 }
 
+sub DESTROY { }
+
 
 1;
