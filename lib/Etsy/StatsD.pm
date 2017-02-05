@@ -342,8 +342,6 @@ Etsy::StatsD - Object-Oriented Client for Etsy's StatsD Server
 
 =head1 METHODS
 
-=over
-
 =head2 new(HOST, PORT, SAMPLE_RATE, PREFIX, SUFFIX)
 
 Create a new instance.
