@@ -94,7 +94,7 @@ sub new {
 
     my @sockets = ();
     foreach my $conn ( @connections ) {
-        my $sock = new IO::Socket::INET(
+        my $sock = IO::Socket::INET->new(
             PeerAddr => $conn->[0],
             PeerPort => $conn->[1],
             Proto    => $conn->[2],
@@ -299,6 +299,9 @@ sub AUTOLOAD {
 }
 
 sub DESTROY { }
+
+
+1;
 
 
 __END__
