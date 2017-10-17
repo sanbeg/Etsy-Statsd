@@ -248,6 +248,10 @@ sub _send_to_sock( $$ ) {
 
 L<http://codeascraft.etsy.com/2011/02/15/measure-anything-measure-everything/>
 
+L<https://github.com/etsy/statsd/blob/master/docs/metric_types.md>
+
+L<https://github.com/b/statsd_spec>
+
 =head1 AUTHOR
 
 Steve Sanbeg L<http://www.buzzfeed.com/stv>
