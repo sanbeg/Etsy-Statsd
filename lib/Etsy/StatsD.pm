@@ -180,7 +180,7 @@ sub update {
     $self->send( \%data, $sample_rate );
 }
 
-=item gauge(STATS, VALUE, SAMPLE_RATE)
+=item gauge(STAT, VALUE, SAMPLE_RATE)
 
 Send a value for the named gauge metric.
 
@@ -191,7 +191,7 @@ sub gauge {
     $self->send( { $stats => "$value|g" }, $sample_rate );
 }
 
-=item set(STATS, VALUE, SAMPLE_RATE)
+=item set(STAT, VALUE, SAMPLE_RATE)
 
 Add a value to the unique set metric.
 
