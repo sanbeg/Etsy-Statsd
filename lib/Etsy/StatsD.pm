@@ -130,7 +130,9 @@ sub new {
 
 =item timing(STAT, TIME, SAMPLE_RATE)
 
-Log timing information
+    $statsd->timing( 'http.response_time', ($start - $end) * 1000 );
+
+Log timing information.  C<SAMPLE_RATE> is optional; C<TIME> is in milliseconds.
 
 =cut
 
@@ -141,7 +143,13 @@ sub timing {
 
 =item increment(STATS, SAMPLE_RATE)
 
-Increment one of more stats counters.
+    $statsd->increment( 'http.request_count' );
+
+Or you can operate on more than one stat at a time:
+
+    $statsd->increment( [qw( http.request_count www.user_page )] );
+
+Increment one of more stats counters. C<SAMPLE_RATE> is optional.
 
 =cut
 
@@ -152,7 +160,13 @@ sub increment {
 
 =item decrement(STATS, SAMPLE_RATE)
 
-Decrement one of more stats counters.
+    $statsd->decrement( 'email_send.budget' );
+
+Or you can operate on more than one stat at a time:
+
+    $statsd->decrement( [qw( email_send.budget business.total_budget )] );
+
+Decrement one of more stats counters. C<SAMPLE_RATE> is optional.
 
 =cut
 
@@ -163,7 +177,14 @@ sub decrement {
 
 =item update(STATS, DELTA, SAMPLE_RATE)
 
-Update one of more stats counters by arbitrary amounts.
+    $statsd->update( 'emails.sent', 7 );
+
+Or you can operate on more than one stat at a time:
+
+    $statsd->update( [qw( emails.sent people.contacted )], 7 );
+
+Update one of more stats counters by arbitrary amounts.  C<SAMPLE_RATE> is
+optional.
 
 =cut
 
@@ -180,9 +201,11 @@ sub update {
     $self->send( \%data, $sample_rate );
 }
 
-=item gauge(STATS, VALUE, SAMPLE_RATE)
+=item gauge(STAT, VALUE, SAMPLE_RATE)
 
-Send a value for the named gauge metric.
+    $statsd->gauge( 'app.bitrate', 12343 );
+
+Send a value for the named gauge metric. C<SAMPLE_RATE> is optional.
 
 =cut
 
@@ -191,9 +214,11 @@ sub gauge {
     $self->send( { $stats => "$value|g" }, $sample_rate );
 }
 
-=item set(STATS, VALUE, SAMPLE_RATE)
+=item set(STAT, VALUE, SAMPLE_RATE)
 
-Add a value to the unique set metric.
+    $statsd->set( 'app.worker_count.active', 5);
+
+Add a value to the unique set metric. C<SAMPLE_RATE> is optional.
 
 =cut
 
@@ -204,7 +229,16 @@ sub set {
 
 =item send(DATA, SAMPLE_RATE)
 
+    $statsd->send({
+      'app.bitrate' => '12343|g',
+      'app.worker_count.active' => '5|s',
+      'email_send.budget => '-1|c',
+      'emails.sent' => '7|c',
+      'http.response_time' => '320|ms',
+    });
+
 Sending logging data; implicitly called by most of the other methods.
+C<SAMPLE_RATE> is optional.
 
 =back
 
@@ -247,6 +281,10 @@ sub _send_to_sock( $$ ) {
 =head1 SEE ALSO
 
 L<http://codeascraft.etsy.com/2011/02/15/measure-anything-measure-everything/>
+
+L<https://github.com/etsy/statsd/blob/master/docs/metric_types.md>
+
+L<https://github.com/b/statsd_spec>
 
 =head1 AUTHOR
 
