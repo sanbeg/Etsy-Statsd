@@ -227,6 +227,24 @@ sub set {
     $self->send( { $stats => "$value|s" }, $sample_rate );
 }
 
+=item gauge(STATS, GAUGE, SAMPLE_RATE)
+
+Send arbitrary values.
+
+=cut
+
+sub gauge {
+	my ( $self, $stats, $gauge, $sample_rate ) = @_;
+	my %data;
+	if ( ref($stats) eq 'ARRAY' ) {
+		%data = map { $_ => "$gauge|g" } @$stats;
+	}
+	else {
+		%data = ( $stats => "$gauge|g" );
+	}
+	$self->send( \%data, $sample_rate );
+}
+
 =item send(DATA, SAMPLE_RATE)
 
     $statsd->send({
